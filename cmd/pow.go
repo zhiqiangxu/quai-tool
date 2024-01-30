@@ -91,6 +91,7 @@ func listHashRate(ctx *cli.Context) (err error) {
 	}
 
 	anchor := uint64(100)
+	totalRate := big.NewInt(0)
 	for i, rpc := range zoneRPCs {
 		client, err := quaiclient.Dial(rpc)
 		if err != nil {
@@ -114,9 +115,13 @@ func listHashRate(ctx *cli.Context) (err error) {
 
 		avgTime := (currentHeader.Time() - anchorHeader.Time()) / (anchor - 1)
 
-		fmt.Printf("zone %d rpc:%v rate:%v\n", i, rpc, computeHashRate(avgDiff, avgTime))
+		rate := computeHashRate(avgDiff, avgTime)
+		totalRate.Add(totalRate, rate)
+		fmt.Printf("zone %d rpc:%v rate:%v\n", i, rpc, rate)
 
 	}
+
+	fmt.Println("totalRate", totalRate)
 
 	return
 }
